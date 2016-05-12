@@ -1,0 +1,25 @@
+- name: Install apt-get base
+  apt: name={{ item }}  update_cache=yes
+  become: True
+  with_items:
+  - postgresql
+  - postgresql-contrib
+
+- name: Set up correct postgres something TODO what is this?
+  copy: src=pg_hba.conf dest=/etc/postgresql/9.3/main/pg_hba.conf
+  become: yes
+
+- name: Restarting postgres
+  shell: sudo -u postgres /etc/init.d/postgresql restart
+
+- name: Add a data command to log in
+  lineinfile:
+    dest=~/.bash_aliases
+    line="{{ item }}"
+    regexp="^{{ item }}$"
+    state=present
+    insertafter=EOF
+    create=True 
+  tags: temp
+  with_items:
+    - alias data='psql -U postgres'
