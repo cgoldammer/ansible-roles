@@ -1,0 +1,30 @@
+---
+- name: Install haskell
+  apt: name=haskell-platform update_cache=yes
+  become: yes
+
+- name: Update cabal
+  command: cabal update
+
+- name: Download reflex
+  git: repo=git://github.com/reflex-frp/reflex-platform dest=~/reflex-platform
+
+# Install the snap framework
+# cabal install snap --force-reinstalls
+# cabal install hdbc-postgresql --force-reinstalls
+
+# haskell-vim-now requires
+# stack:
+# sSchedule task that automatically syncs folder back to hostudo apt-key adv --keyserver keyserver.ubuntu.com -Schedule task that automatically syncs folder back to host-recv-keys 575159689BEFB442
+# echo 'deb http://download.fpcomplete.com/ubuntu trusty main'|sudo tee /etc/apt/sources.list.d/fpco.list
+# sudo apt-get update && sudo apt-get install stack -y
+# #
+# # libcurl-config: #
+# sudo apt-get install libcurl4-gnutls-dev -y
+# #
+# # Then:
+# bash <(curl -sL https://git.io/haskell-vim-now)
+
+# ,ht: Show type of expression = ghcModType, from https://github.com/eagletmt/ghcmod-vim
+# ,hc: nmap <silent> <leader>hc :Neomake ghcmod<CR>
+# ,hh Hoogle: https://github.com/Twinside/vim-hoogle/blob/master/doc/hoogle.txt
