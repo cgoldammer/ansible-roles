@@ -1,0 +1,57 @@
+- name: Sync over code from local machine
+  synchronize: src=~/Dropbox/code/vcode/{{ folder }}/ dest=~/{{ folder }}/
+
+- name: Export IP address for host
+  lineinfile:
+    dest=~/.profile
+    line="{{ item }}"
+    regexp="^{{ item }}$"
+    state=present
+    insertafter=EOF
+    create=True 
+  tags: temp
+  with_items:
+    - export ip_host=IP_HOST
+
+- name: Fill in hostname in profile
+  shell: sed 's/IP_HOST/'"$(netstat -rn | grep "^0.0.0.0 " | cut -d " " -f10)"'/' ~/.profile > ~/.profile_new
+
+- name: Restore old profile file
+  command: "{{ item }}"
+  with_items:
+  - rm ~/.profile
+  - mv ~/.profile_new ~/.profile
+    
+- name: Create command to sync folder
+  template: src=files/sync.sh dest=~/sync.sh owner={{ user }} group={{ user }} mode="u+rwx"
+
+- name: Define task to overwrite host folder with content on vagrant box
+  lineinfile:
+    dest=~/.bash_aliases
+    line="{{ item }}"
+    regexp="^{{ item }}$"
+    state=present
+    insertafter=EOF
+    create=True 
+  tags: temp
+  with_items:
+    - alias sync='~/sync.sh overwrite'
+
+- name: Create cron job to backup code folder
+  cron: name="sync backup" minute="*" hour="*" job="~/sync.sh backup"
+
+- name: ddd ssh config for Vagrant
+  ssh_config: host=host hostname=IP_HOST state=present user={{ user }} strict_host_key_checking=no
+  tags: ssh
+
+- name: Fill in hostname in ssh config
+  shell: sed 's/IP_HOST/'"$(netstat -rn | grep "^0.0.0.0 " | cut -d " " -f10)"'/' ~/.ssh/config > ~/.ssh/config_new
+  tags: ssh
+
+- name: Restore old profile file
+  command: "{{ item }}"
+  tags: ssh
+  with_items:
+  - rm ~/.ssh/config
+  - mv ~/.ssh/config_new ~/.ssh/config
+    
