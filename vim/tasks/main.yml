@@ -1,0 +1,63 @@
+---
+- name: install applications with apt
+  apt: name={{ item }}  update_cache=yes
+  become: true
+  with_items:
+  - tmux
+  - git
+  - ruby-dev
+  - vim-nox
+  - curl
+  - exuberant-ctags
+  - make
+
+- name: Create folder for pathogen
+  file: path=~/.vim/{{ item }} state=directory
+  with_items:
+  - autoload
+  - bundle
+
+- name: Download pathogen (package manager for vim)
+  get_url: 
+    url=https://raw.githubusercontent.com/tpope/vim-pathogen/master/autoload/pathogen.vim
+    dest=~/.vim/autoload/pathogen.vim
+
+- name: Install vundle
+  git: repo=https://github.com/VundleVim/Vundle.vim.git dest=~/.vim/bundle/Vundle.vim
+
+- name: Install slimux
+  git: repo=git://github.com/epeli/slimux dest=~/.vim/bundle/slimux
+
+- name: Install vim-surround
+  git: repo=git://github.com/tpope/vim-surround.git dest=~/.vim/bundle/vim-surround
+
+- name: Install foldsearch
+  git: repo=git://github.com/embear/vim-foldsearch dest=~/.vim/bundle/vim-foldsearch
+
+- name: Install vimcommentary
+  git: repo=git://github.com/tpope/vim-commentary.git dest=~/.vim/bundle/vim-commentary.git
+
+- name: Install command-t
+  git: repo=https://github.com/wincent/Command-T dest=~/.vim/bundle/Command-T
+
+- name: Make command-t
+  shell: chdir=~/.vim/bundle/Command-T/ruby/command-t ruby extconf.rb && make
+
+- name: Clone unix config files
+  git: repo=https://github.com/cgoldammer/config-files dest=~/config-files
+
+- name: Create symbolic links
+  file: src=~/config-files/{{ item }} dest={{ item }} state=link
+  with_items: 
+  - .vimrc
+  - .tmux.conf
+  - .gitconfig
+
+- name: Installing all vim Plugins
+  shell: vim +PluginInstall +qall
+
+- name: Sync shell script to store tmux history
+  copy: src="files/tmux_sessions.sh" dest="~/tmux_sessions.sh" mode="u=rwx"
+
+- name: Make sure tmux sessions script is run in bashrc
+  lineinfile: dest=~/.bashrc regexp="^source tmux_sessions.sh$" line="source tmux_sessions.sh"
