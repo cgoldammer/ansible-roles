@@ -1,0 +1,24 @@
+---
+- name: Create user cg
+  user: 
+    name: "{{ user }}"
+    state: present
+    createhome: yes
+    generate_ssh_key: yes
+
+- name: Sync authorized keys with root to ensure that I can ssh in as user
+  copy: src=~/.ssh/authorized_keys dest=/home/{{ user }}/.ssh/authorized_keys owner={{ user }} group={{ user }} mode=600 remote_src=yes
+  become: yes
+
+- name: Copy over public and private keys from my local machine
+  copy: src=~/.ssh/{{ item }} dest=/home/{{ user }}/.ssh/{{ item }} owner={{ user }} group={{ user }} mode=600
+  with_items:
+    - id_rsa
+    - id_rsa.pub
+
+- name: Add the user to the sudoers
+  lineinfile: "dest=/etc/sudoers state=present regexp='^{{ user }}' line='{{ user }} ALL=(ALL) NOPASSWD: ALL'"
+
+- name: Change shell to bash
+  command: "chsh -s /bin/bash {{ user }}"
+  become: yes
