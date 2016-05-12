@@ -1,0 +1,22 @@
+---
+- name: Install apt-get base
+  apt: name={{ item }}  update_cache=yes
+  become: True
+  with_items:
+  - python-pip
+
+- name: Install packages requires for scipy
+  apt: name={{ item }}  update_cache=yes
+  become: True
+  with_items:
+  - libblas-dev
+  - liblapack-dev
+  - libatlas-base-dev
+  - gfortran
+
+- name: Copy over requirements
+  template: src=files/requirements.txt dest=~/requirements.txt
+
+- name: Install requirements
+  pip: requirements=/home/cg/requirements.txt
+  become: yes
