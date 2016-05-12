@@ -1,0 +1,14 @@
+---
+- name: Register Julia repository in apt
+  apt_repository: repo='ppa:staticfloat/{{ item }}'
+  with_items:
+  - juliareleases
+  - julia-deps
+  become: yes
+
+- name: Install Julia
+  apt: name=julia update_cache=yes
+  become: yes
+
+- name: Install julia-vim package
+  git: repo=git://github.com/JuliaLang/julia-vim.git dest=~/.vim/bundle/julia-vim
